@@ -60,6 +60,20 @@ def create_user(payload: dict):
 
     return user_record
 
+@router.get("/task-status/{task_id}")
+def task_status(task_id: str, user=Depends(get_current_user)):
+    user_id = user["uid"]
+    task_doc = firestore_manager.get_task(user_id, task_id)
+    if not task_doc:
+        return {"error": "Task not found."}
+    return task_doc
+
+@router.get("/list-tasks")
+def list_tasks(user=Depends(get_current_user)):
+    user_id = user["uid"]
+    tasks = firestore_manager.list_tasks(user_id)
+    return {"tasks": tasks}
+
 @router.post("/test")
 def test_endpoint():
     return {"message": "Text Analysis API is running."}
