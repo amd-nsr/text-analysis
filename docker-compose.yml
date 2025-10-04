@@ -1,0 +1,28 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: fastapi_app
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8080 --reload
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    container_name: pubsub_worker
+    # ✅ Run as module so Python can find `app` package
+    command: python -m app.worker
+    volumes:
+      - .:/app
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+      - GCP_PROJECT=kai-developer-test
+      - SUBSCRIPTION_NAME=process-text-sub
